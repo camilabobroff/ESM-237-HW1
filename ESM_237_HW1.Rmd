@@ -1,0 +1,50 @@
+---
+title: "ESM_237_HW_1"
+author: "Camila Bobroff"
+date: "4/17/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, load packages}
+library(tidyverse)
+library(janitor)
+```
+
+```{r, read in the data}
+
+data <- read_csv("data.csv") %>% 
+  clean_names()
+
+temp <- data %>%
+  select(date, tmax, tmin)
+  
+precip <- data %>% 
+  select(date, prcp)
+```
+
+```{r, data exploration}
+
+maxtemp_plot <- temp %>% 
+  ggplot(aes(x = date, y = tmax))+
+  geom_line()
+
+maxtemp_plot
+
+mintemp_plot <- temp %>%
+  ggplot(aes(x = date, y = tmin)) +
+  geom_line()
+
+mintemp_plot
+
+prcp_plot <- precip %>%
+  ggplot(aes(x = date, y = prcp)) +
+  geom_line()
+
+prcp_plot
+
+```
+
