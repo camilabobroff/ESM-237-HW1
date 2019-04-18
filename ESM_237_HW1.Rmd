@@ -12,11 +12,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, load packages}
 library(tidyverse)
 library(janitor)
+library(tseries)
+library(lubridate)
 ```
 
 ```{r, read in the data}
 
-data <- read_csv("data.csv") %>% 
+data <- read_csv("data_monthly.csv") %>% 
   clean_names()
 
 temp <- data %>%
@@ -24,27 +26,79 @@ temp <- data %>%
   
 precip <- data %>% 
   select(date, prcp)
+
 ```
 
 ```{r, data exploration}
+# Convert to timeseries data
 
+maxtemp_ts <- ts(temp$tmax, frequency = 365, start = c(4/15/69, 1))
+plot(maxtemp_ts)
+
+mintemp_ts <- ts(temp$tmin, frequency = 365, start = c(4/15/69, 1))
+plot(mintemp_ts)
+
+precip_ts <- ts(precip$prcp, frequency = 365, start = c(4/15/69, 1))
+plot(precip_ts)
+
+# Decompose to explore data further
+
+# maxtemp_dc <- decompose(maxtem_ts)
+# 
+# library(zoo)
+# decompose(na.StructTS(maxtemp_ts))
+# maxtemp_dc <- decompose(maxtemp_ts)
+
+```
+
+```{r, exploratory plots}
 maxtemp_plot <- temp %>% 
-  ggplot(aes(x = date, y = tmax))+
+  ggplot(aes(x = date, y = tmax, group = 1)) +
+  labs(y = "Maximum Monthly Temperature (°F)", x = "Date") +
   geom_line()
 
 maxtemp_plot
 
 mintemp_plot <- temp %>%
-  ggplot(aes(x = date, y = tmin)) +
+  ggplot(aes(x = date, y = tmin, group = 1)) +
   geom_line()
 
 mintemp_plot
 
 prcp_plot <- precip %>%
-  ggplot(aes(x = date, y = prcp)) +
+  ggplot(aes(x = date, y = prcp, group = 1)) +
   geom_line()
 
 prcp_plot
-
 ```
 
+```{r, monthly average}
+
+# Filter for summer months only
+temp_summer <- temp %>% 
+  separate(date, sep = "-", into = c("year", "month")) %>% 
+  filter(month == "06" | month == "07" | month == "08" | month == "09") %>% 
+  unite("date", year, month, sep = "-")
+
+temp_summer_plotdf <- temp_summer %>%
+  separate(date, sep = "-", into = c("year", "month")) %>% 
+  group_by(year) %>% 
+  summarize(tmax_ave = mean(tmax), tmin_ave = mean(tmin)) 
+
+as.numeric(temp_summer_plotdf$year)
+
+temp_summer_plot = ggplot(temp_summer_plotdf, aes(x = date, y = tmin_ave)) +
+  geom_point(col = "blue") + 
+  scale_y_continuous(limits = c(min(temp_summer_plotdf$tmin_ave), max(temp_summer_plotdf$tmax_ave))) +
+  geom_point(data=temp_summer_plotdf, aes(x=date, y = tmin_ave), col="blue")
+
+temp_summer_plot
+
+plot(temp_summer_plotdf)
+
+temp_monthly$date = unique(year(date))
+
+a = ggplot(clim.mwy, aes(x=dt, tmax))+geom_point(col="red")+
+  scale_y_continuous(limits=c(min(clim.mwy$tmin), max(clim.mwy$tmax)))+
+geom_point(data=clim.mwy, aes(x=dt, tmin), col="blue")
+```
