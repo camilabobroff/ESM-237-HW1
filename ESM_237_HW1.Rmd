@@ -107,7 +107,7 @@ plot(maxtemp_summer,
           pch = 19,
           col = "red",
           xlab = "Year",
-          ylab = "Average Monthly Maximum Temperature")
+          ylab = "Average Monthly Maximum Summer Temperature (°F)")
 abline(linear_tmax)
 
 
@@ -124,7 +124,7 @@ plot(mintemp_summer,
           pch = 19,
           col = "blue",
           xlab = "Year",
-          ylab = "Average Monthly Minimum Temperature")
+          ylab = "Average Monthly Minimum Summer Temperature (°F)")
 abline(linear_tmin)
 
 # EXTREME MAX Filter for summer months only
@@ -137,20 +137,20 @@ ext_summer <- data %>%
 ext_summer_plotdf <- ext_summer %>%
   separate(date, sep = "-", into = c("year", "month")) %>% 
   group_by(year) %>% 
-  summarize(emxt = mean(emxt)) %>% 
+  summarize(emxt = max(emxt)) %>% 
   na.omit()
 
 plot(ext_summer_plotdf,
           pch = 19,
           col = "red",
           xlab = "Year",
-          ylab = "Extreme Maximum Temperatures")
+          ylab = "Extreme Maximum Summer Temperatures (°F)")
 
 linear_ext <- lm(year~emxt, data = ext_summer_plotdf)
 coeff = coefficients(linear_ext)
 summary(linear_ext)
-# Adjusted R-squared: 0.05648
-# P-value: .05498
+# Adjusted R-squared: 0.01099
+# P-value: .2218
 
 # EXTREME MIN Filter for summer months only
 extmin_summer <- data %>% 
@@ -162,19 +162,19 @@ extmin_summer <- data %>%
 extmin_summer_plotdf <- extmin_summer %>%
   separate(date, sep = "-", into = c("year", "month")) %>% 
   group_by(year) %>% 
-  summarize(emnt = mean(emnt)) %>% 
+  summarize(emnt = min(emnt)) %>% 
   na.omit()
 
 plot(extmin_summer_plotdf,
           pch = 19,
           col = "blue",
           xlab = "Year",
-          ylab = "Extreme Minimum Temperatures")
+          ylab = "Extreme Minimum Summer Temperatures (°F)")
 
 linear_extmin <- lm(year~emnt, data = extmin_summer_plotdf)
 coeff = coefficients(linear_extmin)
 summary(linear_extmin)
-# Adjusted R-sqaure: 0.5615
+# Adjusted R-sqaure: 0.399
 # p-value: <.0001
 
 ```
@@ -184,15 +184,50 @@ summary(linear_extmin)
 
 precip_winter <- precip %>% 
   separate(date, sep = "-", into = c("year", "month")) %>% 
-  filter(month == "06" | month == "07" | month == "08" | month == "09") %>% 
+  filter(month == "12" | month == "01" | month == "02") %>% 
   unite("date", year, month, sep = "-")
 
-temp_summer_plotdf <- temp_summer %>%
+precip_winter_plotdf <- precip_winter %>%
   separate(date, sep = "-", into = c("year", "month")) %>% 
   group_by(year) %>% 
-  summarize(tmax_ave = mean(tmax), tmin_ave = mean(tmin)) 
+  summarize(prcp = mean(prcp)) 
 
+plot(precip_winter_plotdf,
+          pch = 19,
+          col = "black",
+          xlab = "Year",
+          ylab = "Average Winter Precipitation (inches)")
 
+linear_prcp <- lm(year~prcp, data = precip_winter_plotdf)
+coeff = coefficients(linear_prcp)
+summary(linear_prcp)
+# Adjusted R-squared: -.009105
+# p-value: 0.4552
+
+# Filter for winter months only
+
+ext_precip_winter <- data %>%
+  select(date, emxp) %>% 
+  separate(date, sep = "-", into = c("year", "month")) %>% 
+  filter(month == "12" | month == "01" | month == "02") %>% 
+  unite("date", year, month, sep = "-")
+
+extprecip_winter_plotdf <- ext_precip_winter %>%
+  separate(date, sep = "-", into = c("year", "month")) %>% 
+  group_by(year) %>% 
+  summarize(emxp = max(emxp)) 
+
+plot(extprecip_winter_plotdf,
+          pch = 19,
+          col = "black",
+          xlab = "Year",
+          ylab = "Maximum Winter Precipitation (inches)")
+
+linear_extprcp <- lm(year~emxp, data = extprecip_winter_plotdf)
+coeff = coefficients(linear_extprcp)
+summary(linear_extprcp)
+# Adjusted R-squared: -.01493
+# p-value: 0.5902
 ```
 
 
