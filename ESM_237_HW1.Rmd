@@ -72,10 +72,117 @@ prcp_plot <- precip %>%
 prcp_plot
 ```
 
-```{r, monthly average}
+```{r, monthly average temp/extremes - summer}
 
 # Filter for summer months only
 temp_summer <- temp %>% 
+  separate(date, sep = "-", into = c("year", "month")) %>% 
+  filter(month == "06" | month == "07" | month == "08") %>% 
+  unite("date", year, month, sep = "-")
+
+temp_summer_plotdf <- temp_summer %>%
+  separate(date, sep = "-", into = c("year", "month")) %>% 
+  group_by(year) %>% 
+  summarize(tmax_ave = mean(tmax), tmin_ave = mean(tmin)) 
+
+# as.numeric(temp_summer_plotdf$year)
+# 
+# temp_summer_plot = ggplot(temp_summer_plotdf, aes(x = date, y = tmin_ave)) +
+#   geom_point(col = "blue") + 
+#   scale_y_continuous(limits = c(min(temp_summer_plotdf$tmin_ave), max(temp_summer_plotdf$tmax_ave))) +
+#   geom_point(data=temp_summer_plotdf, aes(x=date, y = tmin_ave), col="blue")
+
+# temp_summer_plot
+
+maxtemp_summer <- temp_summer_plotdf %>% 
+  select(year, tmax_ave)
+
+linear_tmax <- lm(year~tmax_ave, data = maxtemp_summer)
+coeff = coefficients(linear_tmax)
+summary(linear_tmax)
+# Adjusted R-squared: 0.02808
+# p-value: 0.1291
+
+plot(maxtemp_summer,
+          pch = 19,
+          col = "red",
+          xlab = "Year",
+          ylab = "Average Monthly Maximum Temperature")
+abline(linear_tmax)
+
+
+mintemp_summer <- temp_summer_plotdf %>% 
+  select(year, tmin_ave)
+
+linear_tmin <- lm(year~tmin_ave, data = mintemp_summer)
+coeff = coefficients(linear_tmin)
+summary(linear_tmin)
+# Adjusted R-squared: 0.6067
+# p-value: <.0001
+
+plot(mintemp_summer,
+          pch = 19,
+          col = "blue",
+          xlab = "Year",
+          ylab = "Average Monthly Minimum Temperature")
+abline(linear_tmin)
+
+# EXTREME MAX Filter for summer months only
+ext_summer <- data %>% 
+  select(date, emxt) %>% 
+  separate(date, sep = "-", into = c("year", "month")) %>% 
+  filter(month == "06" | month == "07" | month == "08") %>% 
+  unite("date", year, month, sep = "-")
+
+ext_summer_plotdf <- ext_summer %>%
+  separate(date, sep = "-", into = c("year", "month")) %>% 
+  group_by(year) %>% 
+  summarize(emxt = mean(emxt)) %>% 
+  na.omit()
+
+plot(ext_summer_plotdf,
+          pch = 19,
+          col = "red",
+          xlab = "Year",
+          ylab = "Extreme Maximum Temperatures")
+
+linear_ext <- lm(year~emxt, data = ext_summer_plotdf)
+coeff = coefficients(linear_ext)
+summary(linear_ext)
+# Adjusted R-squared: 0.05648
+# P-value: .05498
+
+# EXTREME MIN Filter for summer months only
+extmin_summer <- data %>% 
+  select(date, emnt) %>% 
+  separate(date, sep = "-", into = c("year", "month")) %>% 
+  filter(month == "06" | month == "07" | month == "08") %>% 
+  unite("date", year, month, sep = "-")
+
+extmin_summer_plotdf <- extmin_summer %>%
+  separate(date, sep = "-", into = c("year", "month")) %>% 
+  group_by(year) %>% 
+  summarize(emnt = mean(emnt)) %>% 
+  na.omit()
+
+plot(extmin_summer_plotdf,
+          pch = 19,
+          col = "blue",
+          xlab = "Year",
+          ylab = "Extreme Minimum Temperatures")
+
+linear_extmin <- lm(year~emnt, data = extmin_summer_plotdf)
+coeff = coefficients(linear_extmin)
+summary(linear_extmin)
+# Adjusted R-sqaure: 0.5615
+# p-value: <.0001
+
+```
+
+```{r, winter precipitation}
+# Filter for winter months only
+
+precip_winter <- precip %>% 
   separate(date, sep = "-", into = c("year", "month")) %>% 
   filter(month == "06" | month == "07" | month == "08" | month == "09") %>% 
   unite("date", year, month, sep = "-")
@@ -85,20 +192,7 @@ temp_summer_plotdf <- temp_summer %>%
   group_by(year) %>% 
   summarize(tmax_ave = mean(tmax), tmin_ave = mean(tmin)) 
 
-as.numeric(temp_summer_plotdf$year)
 
-temp_summer_plot = ggplot(temp_summer_plotdf, aes(x = date, y = tmin_ave)) +
-  geom_point(col = "blue") + 
-  scale_y_continuous(limits = c(min(temp_summer_plotdf$tmin_ave), max(temp_summer_plotdf$tmax_ave))) +
-  geom_point(data=temp_summer_plotdf, aes(x=date, y = tmin_ave), col="blue")
-
-temp_summer_plot
-
-plot(temp_summer_plotdf)
-
-temp_monthly$date = unique(year(date))
-
-a = ggplot(clim.mwy, aes(x=dt, tmax))+geom_point(col="red")+
-  scale_y_continuous(limits=c(min(clim.mwy$tmin), max(clim.mwy$tmax)))+
-geom_point(data=clim.mwy, aes(x=dt, tmin), col="blue")
 ```
+
+
